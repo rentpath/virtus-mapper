@@ -1,6 +1,6 @@
 # Virtus::Mapper
 
-TODO: Write a gem description
+Mapper for Virtus attributes
 
 ## Installation
 
