@@ -8,21 +8,39 @@ module Virtus
   module Mapper
 
     def initialize(attrs)
-      super(map_attributes!(attrs))
+      super(map_attributes!(HWIA.new(attrs)))
     end
 
+    private
+
     def map_attributes!(attrs)
-      HWIA.new(attrs).tap do |h|
-        mapped_attributes.each do |attr|
-          from = attr.options[:from]
-          h[attr.name] = from.respond_to?(:call) ? from.call(h) : h.delete(from)
+      attrs.tap do |h|
+        attributes_to_map_by_symbol(attrs).each do |att|
+          h[att.name] = h.delete(from(att))
+        end
+        attributes_to_map_by_call.each do |att|
+          h[att.name] = from(att).call(h)
         end
       end
     end
 
-    def mapped_attributes
-      attribute_set.select { |att| att.options[:from] }
+    def attributes_to_map_by_symbol(attrs)
+      attributes_to_map.select do |att|
+        !from(att).respond_to?(:call) &&
+        !attrs.has_key?(att.name)
+      end
     end
 
+    def attributes_to_map_by_call
+      attributes_to_map.select { |att| from(att).respond_to?(:call) }
+    end
+
+    def attributes_to_map
+      attribute_set.select { |att| !(from(att).nil?) }
+    end
+
+    def from(attribute)
+      attribute.options[:from]
+    end
   end
 end
