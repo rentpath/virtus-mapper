@@ -7,7 +7,7 @@ HWIA = ActiveSupport::HashWithIndifferentAccess
 module Virtus
   module Mapper
 
-    def initialize(attrs)
+    def initialize(attrs={})
       super(map_attributes!(HWIA.new(attrs)))
     end
 

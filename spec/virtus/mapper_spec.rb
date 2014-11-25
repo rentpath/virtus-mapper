@@ -18,6 +18,13 @@ module Virtus
                     default: '',
                     from: lambda { |atts| atts[:address][:street] rescue '' }
         end
+
+        class Narwhal
+          include Virtus.model
+          include Virtus::Mapper
+
+          attribute :name, String, from: :narwhalmom
+        end
       end
     end
 
@@ -79,5 +86,12 @@ module Virtus
       expect(mapper.last_name).to eq('Doe')
     end
 
+    describe 'given no arguments to constructor' do
+      it 'does not raise error' do
+        expect {
+          Examples::Narwhal.new
+        }.not_to raise_error
+      end
+    end
   end
 end
