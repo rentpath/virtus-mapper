@@ -7,8 +7,11 @@ HWIA = ActiveSupport::HashWithIndifferentAccess
 module Virtus
   module Mapper
 
+    attr_reader :raw_attributes
+
     def initialize(attrs={})
-      super(map_attributes!(HWIA.new(attrs)))
+      @raw_attributes = HWIA.new(attrs)
+      super(map_attributes!(@raw_attributes))
     end
 
     private

@@ -93,5 +93,17 @@ module Virtus
         }.not_to raise_error
       end
     end
+
+    describe '#raw_attributes' do
+      let(:person) { Examples::Person.new(attrs.merge({ unused: true })) }
+
+      it 'preserves unused attributes' do
+        expect(person.raw_attributes[:unused]).to be true
+      end
+
+      it 'does not create instance methods for unused attributes' do
+        expect { person.unused }.to raise_error(NoMethodError)
+      end
+    end
   end
 end
