@@ -58,15 +58,15 @@ module Virtus
     let(:employment_attrs) {
       { salary: 100,  business: 'RentPath', position: 'Programmer' }
     }
-    let(:mapper) { Examples::Person.new(attrs) }
+    let(:person) { Examples::Person.new(attrs) }
 
     describe 'attribute with from option as symbol' do
       it 'translates key' do
-        expect(mapper.last_name).to eq(last_name)
+        expect(person.last_name).to eq(last_name)
       end
 
       it 'does not create method from original key' do
-        expect { mapper.surname }.to raise_error(NoMethodError)
+        expect { person.surname }.to raise_error(NoMethodError)
       end
 
       describe 'with attribute name as key' do
@@ -88,22 +88,22 @@ module Virtus
       end
 
       it 'sets attribute to result of call' do
-        expect(mapper.address).to eq(address)
+        expect(person.address).to eq(address)
       end
     end
 
 
     describe 'attribute without from option' do
       it 'behaves as usual' do
-        expect(mapper.first_name).to eq(first_name)
+        expect(person.first_name).to eq(first_name)
       end
     end
 
     it 'maps attributes with indifferent access' do
-      mapper = Examples::Person.new({ person_id: 1,
+      person = Examples::Person.new({ person_id: 1,
                                       first_name: first_name,
                                       'surname' => last_name })
-      expect(mapper.last_name).to eq('Doe')
+      expect(person.last_name).to eq('Doe')
     end
 
     describe 'given no arguments to constructor' do
