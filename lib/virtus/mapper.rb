@@ -7,29 +7,29 @@ HWIA = ActiveSupport::HashWithIndifferentAccess
 module Virtus
   module Mapper
 
-    attr_reader :raw_attributes
+    attr_reader :mapped_attributes
 
     def initialize(attrs={})
-      @raw_attributes = HWIA.new(attrs)
-      super(map_attributes!(@raw_attributes))
+      @mapped_attributes = HWIA.new(attrs)
+      super(map_attributes!(@mapped_attributes))
     end
 
     def update_attributes
-      map_attributes!(raw_attributes)
+      map_attributes!(mapped_attributes)
       attrs_to_update = (attributes_unprocessed + attributes_with_nil_values).compact.uniq
       attrs_to_update.each do |name|
-        self.send("#{name}=", raw_attributes[name])
+        self.send("#{name}=", mapped_attributes[name])
       end
     end
 
     def attributes_unprocessed
       # NOTE: https://github.com/solnic/virtus/issues/266 may affect this
-      # Workaround to the bug would be to go through raw_attributes and capture
+      # Workaround to the bug would be to go through mapped_attributes and capture
       # keys that throw NoMethodError on send
-      # Any attributes (keys) in raw_attributes that Virtus has not processed and
+      # Any attributes (keys) in mapped_attributes that Virtus has not processed and
       # is not aware of - unprocessed_attributes
 
-      raw_attributes.keys.collect do |key|
+      mapped_attributes.keys.collect do |key|
         begin
           self.send(key)
           if self.send(key).nil?

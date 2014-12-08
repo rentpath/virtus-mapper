@@ -112,11 +112,11 @@ module Virtus
       end
     end
 
-    describe '#raw_attributes' do
+    describe '#mapped_attributes' do
       let(:person) { Examples::Person.new(attrs.merge({ unused: true })) }
 
       it 'preserves unused attributes' do
-        expect(person.raw_attributes[:unused]).to be true
+        expect(person.mapped_attributes[:unused]).to be true
       end
 
       it 'does not create instance methods for unused attributes' do
