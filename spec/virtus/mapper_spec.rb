@@ -71,11 +71,11 @@ module Virtus
 
       describe 'with attribute name as key' do
         it 'does not raise error' do
-          expect { Examples::Person.new({id: 1}) }.not_to raise_error
+          expect { Examples::Person.new({ id: 1 }) }.not_to raise_error
         end
 
         it 'returns expected value' do
-          expect(Examples::Person.new({id: 1}).id).to eq(1)
+          expect(Examples::Person.new({ id: 1 }).id).to eq(1)
         end
       end
     end
