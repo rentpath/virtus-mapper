@@ -20,11 +20,11 @@ module Virtus
             from: lambda { |atts| atts[:address][:street] rescue '' }
         end
 
-        class Narwhal
+        class Dog
           include Virtus.model
           include Virtus::Mapper
 
-          attribute :name, String, from: :narwhalmom
+          attribute :name, String, from: :shelter
         end
 
         module Employment
@@ -108,7 +108,7 @@ module Virtus
 
     describe 'given no arguments to constructor' do
       it 'does not raise error' do
-        expect { Examples::Narwhal.new }.not_to raise_error
+        expect { Examples::Dog.new }.not_to raise_error
       end
     end
 
