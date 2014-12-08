@@ -13,10 +13,11 @@ module Virtus
           attribute :id, Integer, from: :person_id, strict: true, required: true
           attribute :first_name, String
           attribute :last_name, String, from: :surname
+          attribute :age, Integer
           attribute :address,
-                    String,
-                    default: '',
-                    from: lambda { |atts| atts[:address][:street] rescue '' }
+            String,
+            default: '',
+            from: lambda { |atts| atts[:address][:street] rescue '' }
         end
 
         class Narwhal
@@ -24,6 +25,22 @@ module Virtus
           include Virtus::Mapper
 
           attribute :name, String, from: :narwhalmom
+        end
+
+        module Employment
+          include Virtus.module
+          include Virtus::Mapper
+
+          attribute :company, String, from: :business
+          attribute :job_title, String, from: :position
+          attribute :salary, Integer
+        end
+
+        module Traits
+          include Virtus.module
+          include Virtus::Mapper
+
+          attribute :eye_color, String, from: :eyecolor
         end
       end
     end
@@ -37,6 +54,9 @@ module Virtus
         first_name: first_name,
         surname: last_name,
         address: { 'street' => address } }
+    }
+    let(:employment_attrs) {
+      { salary: 100,  business: 'RentPath', position: 'Programmer' }
     }
     let(:mapper) { Examples::Person.new(attrs) }
 
@@ -88,9 +108,7 @@ module Virtus
 
     describe 'given no arguments to constructor' do
       it 'does not raise error' do
-        expect {
-          Examples::Narwhal.new
-        }.not_to raise_error
+        expect { Examples::Narwhal.new }.not_to raise_error
       end
     end
 
@@ -103,6 +121,60 @@ module Virtus
 
       it 'does not create instance methods for unused attributes' do
         expect { person.unused }.to raise_error(NoMethodError)
+      end
+    end
+
+    describe '#update_attributes' do
+      describe 'for single included module' do
+        let(:person) { Examples::Person.new(attrs.merge(employment_attrs)) }
+
+        before do
+          person.extend(Examples::Employment)
+          person.update_attributes
+        end
+
+        it 'updates unmapped attribute values for extended modules' do
+          expect(person.salary).to eq(100)
+        end
+
+        it 'updates mapped attribute values for extended modules' do
+          expect(person.job_title).to eq('Programmer')
+        end
+      end
+
+      describe 'for multiple extended modules' do
+        let(:person) {
+          Examples::Person.new(
+            attrs.merge(attrs.merge(employment_attrs).merge({ eyecolor: 'green' }))
+          )
+        }
+
+        before do
+          person.extend(Examples::Employment)
+          person.extend(Examples::Traits)
+        end
+
+        it 'updates mapped attribute values' do
+          pending
+          person.update_attributes
+          expect(person.eye_color).to eq('green')
+          expect(person.salary).to eq(100)
+          expect(person.job_title).to eq('Programmer')
+        end
+
+        it 'knows unprocessed attributes' do
+          # salary has been processed by Virtus because it is umapped, so
+          # person.salary is a legitimate method call, but the value of salary
+          # has not been set because we have not run update_attributes at a time
+          # when salary was part of the Virtus's attributes hash
+          [:position, :eyecolor, :salary].each do |attr|
+            expect(person.attributes_unprocessed).to include(attr)
+          end
+        end
+
+        it 'knows attributes with nil values' do
+          expect(person.attributes_with_nil_values).to include(:eye_color)
+        end
       end
     end
   end

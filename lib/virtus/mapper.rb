@@ -14,6 +14,37 @@ module Virtus
       super(map_attributes!(@raw_attributes))
     end
 
+    def update_attributes
+      map_attributes!(raw_attributes)
+      attrs_to_update = (attributes_unprocessed + attributes_with_nil_values).compact.uniq
+      attrs_to_update.each do |name|
+        self.send("#{name}=", raw_attributes[name])
+      end
+    end
+
+    def attributes_unprocessed
+      # NOTE: https://github.com/solnic/virtus/issues/266 may affect this
+      # Workaround to the bug would be to go through raw_attributes and capture
+      # keys that throw NoMethodError on send
+      # Any attributes (keys) in raw_attributes that Virtus has not processed and
+      # is not aware of - unprocessed_attributes
+
+      raw_attributes.keys.collect do |key|
+        begin
+          self.send(key)
+          if self.send(key).nil?
+            key.to_sym
+          end
+        rescue NoMethodError
+          key.to_sym
+        end
+      end
+    end
+
+    def attributes_with_nil_values
+      attributes.map { |k,v| k if v.nil? }
+    end
+
     private
 
     def map_attributes!(attrs)
@@ -45,5 +76,6 @@ module Virtus
     def from(attribute)
       attribute.options[:from]
     end
+
   end
 end
