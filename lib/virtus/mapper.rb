@@ -14,7 +14,7 @@ module Virtus
       super(map_attributes!(@mapped_attributes))
     end
 
-    def update_attributes
+    def update_attributes!
       map_attributes!(mapped_attributes)
       attrs_to_update = (attributes_unprocessed + attributes_with_nil_values).compact.uniq
       attrs_to_update.each do |name|

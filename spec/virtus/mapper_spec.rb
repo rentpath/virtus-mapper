@@ -124,13 +124,13 @@ module Virtus
       end
     end
 
-    describe '#update_attributes' do
+    describe '#update_attributes!' do
       describe 'for single included module' do
         let(:person) { Examples::Person.new(attrs.merge(employment_attrs)) }
 
         before do
           person.extend(Examples::Employment)
-          person.update_attributes
+          person.update_attributes!
         end
 
         it 'updates unmapped attribute values for extended modules' do
@@ -156,7 +156,7 @@ module Virtus
 
         it 'updates mapped attribute values' do
           pending
-          person.update_attributes
+          person.update_attributes!
           expect(person.eye_color).to eq('green')
           expect(person.salary).to eq(100)
           expect(person.job_title).to eq('Programmer')
@@ -165,7 +165,7 @@ module Virtus
         it 'knows unprocessed attributes' do
           # salary has been processed by Virtus because it is umapped, so
           # person.salary is a legitimate method call, but the value of salary
-          # has not been set because we have not run update_attributes at a time
+          # has not been set because we have not run update_attributes! at a time
           # when salary was part of the Virtus's attributes hash
           [:position, :eyecolor, :salary].each do |attr|
             expect(person.attributes_unprocessed).to include(attr)
