@@ -14,6 +14,7 @@ module Virtus
       super(prepare_attributes_for_assignment!(@mapped_attributes))
     end
 
+    # A workaround for https://github.com/solnic/virtus/issues/266
     def extend_with(mod)
       attr_set = attribute_set
       self.extend(mod) # Virtus modifies attribute_set
