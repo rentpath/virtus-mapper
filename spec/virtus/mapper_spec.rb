@@ -91,7 +91,6 @@ module Virtus
       end
     end
 
-
     describe 'attribute without from option' do
       it 'behaves as usual' do
         expect(person.first_name).to eq(first_name)
@@ -111,17 +110,17 @@ module Virtus
       end
     end
 
-    # describe '#mapped_attributes' do
-    #   let(:person) { Examples::Person.new(person_attrs.merge({ unused: true })) }
+    describe '#mapped_attributes' do
+      let(:person) { Examples::Person.new(person_attrs.merge({ unused: true })) }
 
-    #   it 'preserves unused attributes' do
-    #     expect(person.mapped_attributes[:unused]).to be true
-    #   end
+      it 'preserves unused attributes' do
+        expect(person.mapped_attributes[:unused]).to be true
+      end
 
-    #   it 'does not create instance methods for unused attributes' do
-    #     expect { person.unused }.to raise_error(NoMethodError)
-    #   end
-    # end
+      it 'does not create instance methods for unused attributes' do
+        expect { person.unused }.to raise_error(NoMethodError)
+      end
+    end
 
     describe '#extend_with' do
       describe 'for single extended module' do
