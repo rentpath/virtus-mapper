@@ -39,7 +39,7 @@ module Virtus
           include Virtus.model
           include Virtus::Mapper
 
-          attribute :name, String, from: :shelter
+          attribute :name, String, from: :shelter, default: 'Spot'
         end
       end
     end
@@ -107,6 +107,16 @@ module Virtus
     describe 'given no arguments to constructor' do
       it 'does not raise error' do
         expect { Examples::Dog.new }.not_to raise_error
+      end
+
+      it 'respects defaults' do
+        expect(Examples::Dog.new.name).to eq('Spot')
+      end
+    end
+
+    describe 'given nil values' do
+      it 'respects nil values' do
+        expect(Examples::Dog.new(name: nil).name).to be_nil
       end
     end
 

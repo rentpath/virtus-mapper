@@ -25,6 +25,7 @@ module Virtus
     private
 
     def prepare_attributes_for_assignment!(attrs)
+      nil_value_keys = attrs.collect { |k, v| k if v.nil? }.compact
       attrs.tap do |h|
         attributes_to_map_by_symbol(attrs).each do |att|
           h[att.name] = h.delete(from(att))
@@ -32,7 +33,7 @@ module Virtus
         attributes_to_map_by_call.each do |att|
           h[att.name] = from(att).call(h)
         end
-      end
+      end.delete_if { |k, v| !nil_value_keys.include?(k) && v.nil? }
     end
 
     def attributes_to_map_by_symbol(attrs)
