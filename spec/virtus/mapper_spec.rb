@@ -6,7 +6,7 @@ module Virtus
 
     before do
       module Examples
-        class Person
+        class PersonMapper
           include Virtus.model
           include Virtus::Mapper
 
@@ -19,7 +19,7 @@ module Virtus
                     from: lambda { |atts| atts[:address][:street] rescue '' }
         end
 
-        module Employment
+        module EmploymentMapper
           include Virtus.module
           include Virtus::Mapper
 
@@ -28,14 +28,14 @@ module Virtus
           attribute :salary, Integer
         end
 
-        module Traits
+        module TraitsMapper
           include Virtus.module
           include Virtus::Mapper
 
           attribute :eye_color, String, from: :eyecolor
         end
 
-        class Dog
+        class DogMapper
           include Virtus.model
           include Virtus::Mapper
 
@@ -57,7 +57,7 @@ module Virtus
     let(:employment_attrs) {
       { salary: 100,  business: 'RentPath', position: 'Programmer' }
     }
-    let(:person) { Examples::Person.new(person_attrs) }
+    let(:person) { Examples::PersonMapper.new(person_attrs) }
 
     describe 'attribute with from option as symbol' do
       it 'translates key' do
@@ -68,22 +68,34 @@ module Virtus
         expect { person.surname }.to raise_error(NoMethodError)
       end
 
-      describe 'with attribute name as key' do
-        it 'does not raise error' do
-          expect { Examples::Person.new({id: 1}) }.not_to raise_error
+      describe 'required attribute with name key, missing from key' do
+        it 'raises error' do
+          expect { Examples::PersonMapper.new({id: 1}) }.to raise_error
         end
+      end
 
-        it 'returns expected value' do
-          expect(Examples::Person.new({id: 1}).id).to eq(1)
+      describe 'attribute with name key, missing from key' do
+        it 'returns nil from reader method' do
+          data = { person_id: 1, last_name: 'Smith' }
+          person = Examples::PersonMapper.new(data)
+          expect(person.last_name).to be_nil
+        end
+      end
+
+      describe 'when name and from keys exist in initialized attributes' do
+        it 'prefers from data to name data' do
+          data = person_attrs.merge({ last_name: 'Smith' })
+          person = Examples::PersonMapper.new(data)
+          expect(person.last_name).to eq('Doe')
         end
       end
     end
 
     describe 'attribute with from option as callable object' do
       it 'calls the object and passes the attributes hash' do
-        callable = Examples::Person.attribute_set[:address].options[:from]
+        callable = Examples::PersonMapper.attribute_set[:address].options[:from]
         expect(callable).to receive(:call) { person_attrs }
-        Examples::Person.new(person_attrs)
+        Examples::PersonMapper.new(person_attrs)
       end
 
       it 'sets attribute to result of call' do
@@ -98,7 +110,7 @@ module Virtus
     end
 
     it 'maps attributes with indifferent access' do
-      person = Examples::Person.new({ person_id: 1,
+      person = Examples::PersonMapper.new({ person_id: 1,
                                       first_name: first_name,
                                       'surname' => last_name })
       expect(person.last_name).to eq('Doe')
@@ -106,22 +118,22 @@ module Virtus
 
     describe 'given no arguments to constructor' do
       it 'does not raise error' do
-        expect { Examples::Dog.new }.not_to raise_error
+        expect { Examples::DogMapper.new }.not_to raise_error
       end
 
       it 'respects defaults' do
-        expect(Examples::Dog.new.name).to eq('Spot')
+        expect(Examples::DogMapper.new.name).to eq('Spot')
       end
     end
 
     describe 'given nil values' do
       it 'respects nil values' do
-        expect(Examples::Dog.new(name: nil).name).to be_nil
+        expect(Examples::DogMapper.new(name: nil).name).to be_nil
       end
     end
 
     describe '#mapped_attributes' do
-      let(:person) { Examples::Person.new(person_attrs.merge({ unused: true })) }
+      let(:person) { Examples::PersonMapper.new(person_attrs.merge({ unused: true })) }
 
       it 'preserves unused attributes' do
         expect(person.mapped_attributes[:unused]).to be true
@@ -135,11 +147,11 @@ module Virtus
     describe '#extend_with' do
       describe 'for single extended module' do
         let(:person) {
-          Examples::Person.new(person_attrs.merge(employment_attrs))
+          Examples::PersonMapper.new(person_attrs.merge(employment_attrs))
         }
 
         before do
-          person.extend_with(Examples::Employment)
+          person.extend_with(Examples::EmploymentMapper)
         end
 
         it 'updates unmapped attribute values for extended modules' do
@@ -166,14 +178,14 @@ module Virtus
 
       describe 'for multiple extended modules' do
         let(:person) {
-          Examples::Person.new(
+          Examples::PersonMapper.new(
             person_attrs.merge(employment_attrs.merge({ eyecolor: 'green' }))
           )
         }
 
         before do
-          person.extend_with(Examples::Employment)
-          person.extend_with(Examples::Traits)
+          person.extend_with(Examples::EmploymentMapper)
+          person.extend_with(Examples::TraitsMapper)
         end
 
         it 'updates mapped attributes for last module extended' do

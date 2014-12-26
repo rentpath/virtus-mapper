@@ -41,10 +41,7 @@ module Virtus
     end
 
     def attributes_to_map_by_symbol(attrs)
-      attributes_to_map.select do |att|
-        !from(att).respond_to?(:call) &&
-        !attrs.has_key?(att.name)
-      end
+      attributes_to_map - attributes_to_map_by_call
     end
 
     def attributes_to_map_by_call
