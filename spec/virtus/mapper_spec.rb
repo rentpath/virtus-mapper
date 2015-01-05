@@ -59,6 +59,23 @@ module Virtus
     }
     let(:person) { Examples::PersonMapper.new(person_attrs) }
 
+    describe '#attr_set' do
+      it 'gets set on initialization' do
+        expect(person.attr_set).not_to be_nil
+      end
+
+      it 'contains expected attributes' do
+        attr_set_names = person.attr_set.collect(&:name)
+        [:id, :first_name, :last_name, :address].each do |name|
+          expect(attr_set_names).to include(name)
+        end
+      end
+
+      it 'is not the same as the class-scope attribute-set' do
+        expect(person.attr_set).not_to equal(person.class.attribute_set)
+      end
+    end
+
     describe 'attribute with from option as symbol' do
       it 'translates key' do
         expect(person.last_name).to eq(last_name)
@@ -132,11 +149,11 @@ module Virtus
       end
     end
 
-    describe '#mapped_attributes' do
+    describe '#raw_attributes' do
       let(:person) { Examples::PersonMapper.new(person_attrs.merge({ unused: true })) }
 
       it 'preserves unused attributes' do
-        expect(person.mapped_attributes[:unused]).to be true
+        expect(person.raw_attributes[:unused]).to be true
       end
 
       it 'does not create instance methods for unused attributes' do
@@ -144,23 +161,50 @@ module Virtus
       end
     end
 
-    describe '#extend_with' do
-      it 'does not affect class-scope attribute_set' do
-        data = {
-          person_id: person_id,
+    describe '#add_attributes' do
+      let(:data) {
+        { person_id: person_id,
           first_name: first_name,
           surname: last_name,
           address: { 'street' => address },
           salary: 100,
           business: 'RentPath',
           position: 'Programmer' }
-        person1 = Examples::PersonMapper.new(data)
-        person2 = Examples::PersonMapper.new(data)
-        person2.extend_with(Examples::EmploymentMapper)
-        person2_atts = person2.class.attribute_set.collect(&:name)
-        person1_atts = person1.class.attribute_set.collect(&:name)
-        expect(person1_atts).not_to include(:company)
+      }
+      let(:person1) { Examples::PersonMapper.new(data) }
+      let(:person2) { Examples::PersonMapper.new(data) }
+      let(:mod) { Examples::EmploymentMapper }
+
+
+      it 'does not affect class-scope attribute_set' do
+        expect { person2.add_attributes(mod) }.not_to change {
+          person2.class.attribute_set.to_a }
       end
+
+      it 'adds module attributes to #attr_set' do
+        module_attributes = Class.new do
+          include Examples::EmploymentMapper
+        end.attribute_set.to_a
+        person2.add_attributes(mod)
+        attr_names = person2.attr_set.collect(&:name)
+        module_attributes.each do |att|
+          expect(attr_names).to include(att.name)
+        end
+      end
+    end
+
+    describe '#extend_with' do
+      let(:data) {
+        { person_id: person_id,
+          first_name: first_name,
+          surname: last_name,
+          address: { 'street' => address },
+          salary: 100,
+          business: 'RentPath',
+          position: 'Programmer' }
+      }
+      let(:person1) { Examples::PersonMapper.new(data) }
+      let(:person2) { Examples::PersonMapper.new(data) }
 
       describe 'for single extended module' do
         let(:person) {
@@ -168,7 +212,7 @@ module Virtus
         }
 
         before do
-          person.extend_with(Examples::EmploymentMapper)
+          person.add_attributes(Examples::EmploymentMapper)
         end
 
         it 'updates unmapped attribute values for extended modules' do
@@ -180,7 +224,7 @@ module Virtus
         end
 
         it 'adds module attributes to attribute_set' do
-          attr_names = person.instance_eval { attribute_set }.collect(&:name)
+          attr_names = person.attr_set.collect(&:name)
           [:id,
            :first_name,
            :last_name,
@@ -201,8 +245,8 @@ module Virtus
         }
 
         before do
-          person.extend_with(Examples::EmploymentMapper)
-          person.extend_with(Examples::TraitsMapper)
+          person.add_attributes(Examples::EmploymentMapper)
+          person.add_attributes(Examples::TraitsMapper)
         end
 
         it 'updates mapped attributes for last module extended' do
@@ -216,7 +260,7 @@ module Virtus
         end
 
         it 'adds module attributes to attribute_set' do
-          attr_names = person.instance_eval { attribute_set }.collect(&:name)
+          attr_names = person.attr_set.collect(&:name)
           [:id,
            :first_name,
            :last_name,
