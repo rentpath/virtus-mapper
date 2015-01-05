@@ -145,6 +145,23 @@ module Virtus
     end
 
     describe '#extend_with' do
+      it 'doe not affect class-scope attribute_set' do
+        data = {
+          person_id: person_id,
+          first_name: first_name,
+          surname: last_name,
+          address: { 'street' => address },
+          salary: 100,
+          business: 'RentPath',
+          position: 'Programmer' }
+        person1 = Examples::PersonMapper.new(data)
+        person2 = Examples::PersonMapper.new(data)
+        person2.extend_with(Examples::EmploymentMapper)
+        person2_atts = person2.class.attribute_set.collect(&:name)
+        person1_atts = person1.class.attribute_set.collect(&:name)
+        expect(person1_atts).not_to include(:company)
+      end
+
       describe 'for single extended module' do
         let(:person) {
           Examples::PersonMapper.new(person_attrs.merge(employment_attrs))
