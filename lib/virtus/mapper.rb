@@ -20,12 +20,11 @@ module Virtus
     def add_attributes(mod)
       mod_attrs = module_attributes(mod)
       attr_set.merge(mod_attrs)
+      mapped_attrs = mapped_attributes
       mod_attrs.each do |attr|
-        value = mapped_attributes[attr.name]
+        value = mapped_attrs[attr.name]
         define_singleton_method(attr.name) { value }
       end
-      # Limit to attributes in module
-      mapped_attributes
     end
 
     private
