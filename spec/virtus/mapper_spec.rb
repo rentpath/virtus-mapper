@@ -145,7 +145,7 @@ module Virtus
     end
 
     describe '#extend_with' do
-      it 'doe not affect class-scope attribute_set' do
+      it 'does not affect class-scope attribute_set' do
         data = {
           person_id: person_id,
           first_name: first_name,
