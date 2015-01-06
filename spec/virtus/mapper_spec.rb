@@ -26,6 +26,7 @@ module Virtus
           attribute :company, String, from: :business
           attribute :job_title, String, from: :position
           attribute :salary, Integer
+          attribute :fulltime, Virtus::Attribute::Boolean
         end
 
         module TraitsMapper
@@ -55,7 +56,10 @@ module Virtus
         address: { 'street' => address } }
     }
     let(:employment_attrs) {
-      { salary: 100,  business: 'RentPath', position: 'Programmer' }
+      { salary: 100,
+        business: 'RentPath',
+        position: 'Programmer',
+        fulltime: '1' }
     }
     let(:person) { Examples::PersonMapper.new(person_attrs) }
 
@@ -171,7 +175,8 @@ module Virtus
           address: { 'street' => address },
           salary: 100,
           business: 'RentPath',
-          position: 'Programmer' }
+          position: 'Programmer',
+          fulltime: '1' }
       }
       let(:person1) { Examples::PersonMapper.new(data) }
       let(:person2) { Examples::PersonMapper.new(data) }
@@ -193,20 +198,6 @@ module Virtus
           expect(attr_names).to include(att.name)
         end
       end
-    end
-
-    describe '#add_attributes' do
-      let(:data) {
-        { person_id: person_id,
-          first_name: first_name,
-          surname: last_name,
-          address: { 'street' => address },
-          salary: 100,
-          business: 'RentPath',
-          position: 'Programmer' }
-      }
-      let(:person1) { Examples::PersonMapper.new(data) }
-      let(:person2) { Examples::PersonMapper.new(data) }
 
       describe 'for single module' do
         let(:person) {
@@ -215,6 +206,10 @@ module Virtus
 
         before do
           person.add_attributes(Examples::EmploymentMapper)
+        end
+
+        it 'coerces data' do
+          expect(person.fulltime).to be true
         end
 
         it 'updates unmapped attribute values' do

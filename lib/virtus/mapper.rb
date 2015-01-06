@@ -22,7 +22,7 @@ module Virtus
       attr_set.merge(mod_attrs)
       mapped_attrs = mapped_attributes
       mod_attrs.each do |attr|
-        value = mapped_attrs[attr.name]
+        value = attr.coerce(mapped_attrs[attr.name])
         define_singleton_method(attr.name) { value }
       end
     end
