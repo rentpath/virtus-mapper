@@ -60,7 +60,7 @@ module Virtus
     let(:person) { Examples::PersonMapper.new(person_attrs) }
 
     describe '#attr_set' do
-      it 'gets set on initialization' do
+      it 'initializes to non-nil value' do
         expect(person.attr_set).not_to be_nil
       end
 
@@ -71,7 +71,7 @@ module Virtus
         end
       end
 
-      it 'is not the same as the class-scope attribute-set' do
+      it "is not the same as Virtus's class-scope attribute_set" do
         expect(person.attr_set).not_to equal(person.class.attribute_set)
       end
     end
@@ -115,7 +115,7 @@ module Virtus
         Examples::PersonMapper.new(person_attrs)
       end
 
-      it 'sets attribute to result of call' do
+      it 'sets attribute value to result of call' do
         expect(person.address).to eq(address)
       end
     end
@@ -156,8 +156,10 @@ module Virtus
         expect(person.raw_attributes[:unused]).to be true
       end
 
-      it 'does not create instance methods for unused attributes' do
-        expect { person.unused }.to raise_error(NoMethodError)
+      describe 'keys that do not have corresponding attributes' do
+        it 'do not get instance methods' do
+          expect { person.unused }.to raise_error(NoMethodError)
+        end
       end
     end
 
@@ -193,7 +195,7 @@ module Virtus
       end
     end
 
-    describe '#extend_with' do
+    describe '#add_attributes' do
       let(:data) {
         { person_id: person_id,
           first_name: first_name,
@@ -206,7 +208,7 @@ module Virtus
       let(:person1) { Examples::PersonMapper.new(data) }
       let(:person2) { Examples::PersonMapper.new(data) }
 
-      describe 'for single extended module' do
+      describe 'for single module' do
         let(:person) {
           Examples::PersonMapper.new(person_attrs.merge(employment_attrs))
         }
@@ -215,15 +217,15 @@ module Virtus
           person.add_attributes(Examples::EmploymentMapper)
         end
 
-        it 'updates unmapped attribute values for extended modules' do
+        it 'updates unmapped attribute values' do
           expect(person.salary).to eq(100)
         end
 
-        it 'updates mapped attribute values for extended modules' do
+        it 'updates mapped attribute values' do
           expect(person.job_title).to eq('Programmer')
         end
 
-        it 'adds module attributes to attribute_set' do
+        it 'adds module attributes to attr_set' do
           attr_names = person.attr_set.collect(&:name)
           [:id,
            :first_name,
@@ -237,7 +239,7 @@ module Virtus
         end
       end
 
-      describe 'for multiple extended modules' do
+      describe 'for multiple modules' do
         let(:person) {
           Examples::PersonMapper.new(
             person_attrs.merge(employment_attrs.merge({ eyecolor: 'green' }))
@@ -249,17 +251,17 @@ module Virtus
           person.add_attributes(Examples::TraitsMapper)
         end
 
-        it 'updates mapped attributes for last module extended' do
+        it 'updates mapped attributes for last module' do
           expect(person.eye_color).to eq('green')
         end
 
-        it 'updates mapped attributes for first module extended' do
+        it 'updates mapped attributes for first module' do
           expect(person.salary).to eq(100)
           expect(person.company).to eq('RentPath')
           expect(person.job_title).to eq('Programmer')
         end
 
-        it 'adds module attributes to attribute_set' do
+        it 'adds module attributes to attr_set' do
           attr_names = person.attr_set.collect(&:name)
           [:id,
            :first_name,
