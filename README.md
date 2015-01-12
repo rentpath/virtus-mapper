@@ -2,6 +2,8 @@
 
 Mapper for Virtus attributes
 
+NOTE: Recent commits allow for mixing in Virtus modules to Virtus object instances, which is a break from recommended Virtus usage.
+
 ## Installation
 
 Add this line to your application's Gemfile:
