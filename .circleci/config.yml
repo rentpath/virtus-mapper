@@ -1,5 +1,4 @@
-
-version: 2
+version: 2.1
 
 orbs:
   gem: goldstar/publish-gem@1.0.1
@@ -7,9 +6,11 @@ orbs:
 workflows:
   main:
     jobs:
-      - gem/test
+      - gem/test:
+          ruby-version: "2.6.6"
       - gem/build-and-deploy:
           context: packagecloud
+          ruby-version: "2.6.6"
           requires:
             - gem/test
           filters:
